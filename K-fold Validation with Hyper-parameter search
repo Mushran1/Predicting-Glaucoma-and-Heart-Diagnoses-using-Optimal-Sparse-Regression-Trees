@@ -1,0 +1,66 @@
+# Perform K-fold validation
+from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error, r2_score
+from osrt.model.threshold_guess import compute_thresholds
+from osrt.model.osrt import OSRT
+
+# read the dataset
+# preprocess your data otherwise OSRT will binarize continuous feature using all threshold values.
+df = pd.read_csv("heart_binarized.csv")
+X, y = df.iloc[:, :-1].values, df.iloc[:, -1].values
+h = df.columns[:-1]
+X = pd.DataFrame(X, columns=h)
+
+# guess thresholds (OPTIONAL) uncomment following lines if you want to speed up optimization
+# NOTE: You should also evaluate accuracy on guessed data if you choose to guess thresholds
+# GBRT parameters for threshold guesses
+n_est = 40
+max_depth = 1
+X_opt, thresholds, header, threshold_guess_time = compute_thresholds(
+    X, y, n_est, max_depth
+)
+
+
+
+# Hyperparameter grid
+param_grid = {
+    "depth_budget": [0],
+    "regularization": [0.0004,0.0005,0.0006,0.0007,0.0008,0.0009,0.001,0.002,0.003,0.004,
+        0.005,0.006,0.007,0.008,0.009,0.01],
+}
+
+
+
+best_params_list = []
+best_models_list = []
+
+# Define the number of folds
+n_splits = 5
+
+# Create a KFold object
+kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+
+# Apply k-fold validation on the dataset
+for train_index, test_index in kf.split(X_opt):
+    X_train_kf, X_test_kf = X_opt.iloc[train_index], X_opt.iloc[test_index]
+    y_train_kf, y_test_kf = y[train_index], y[test_index]
+
+    # Perform k-fold validation, and retrieve the best model for each split
+    best_model, best_params, best_mse, best_r2, best_num_leaves = hyperParameterSearch(
+        param_grid, X_train_kf, X_test_kf, y_train_kf, y_test_kf
+    )
+
+    # Output and save off best parameters for each run
+    print("Best Params:")
+    print(best_params)
+    print("Best R2: {}".format(best_r2))
+    print("Best MSE: {}".format(best_mse))
+    print("Best # of Leaves: {}".format(best_num_leaves))
+    print("Best Depth: {}".format(best_model.max_depth()))
+    print()
+    print()
+    best_params_list.append(best_params)
+    best_models_list.append(best_model)
+
+print("List of parameters for best models")
+print(best_params_list)
