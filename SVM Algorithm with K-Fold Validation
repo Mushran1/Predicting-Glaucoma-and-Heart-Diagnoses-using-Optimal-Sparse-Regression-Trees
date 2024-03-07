@@ -1,0 +1,38 @@
+from sklearn.svm import SVR
+
+# Initialize lists to store the results for SVM
+svm_mse_scores = []
+svm_rmse_scores = []
+svm_r2_scores = []
+
+# Perform k-fold cross-validation
+for train_index, test_index in kf.split(X):
+    # Split the data
+    X_train_kf, X_test_kf = X.iloc[train_index], X.iloc[test_index]
+    y_train_kf, y_test_kf = y[train_index], y[test_index]
+
+    # Initialize the SVM classifier
+    svm_reg = SVR()
+    svm_reg.fit(X_train_kf, y_train_kf)
+
+    # Predict on the test set
+    y_pred_kf = svm_reg.predict(X_test_kf)
+
+    # Calculate MSE and RMSE
+    mse = mean_squared_error(y_test_kf, y_pred_kf)
+    r2 = r2_score(y_test_kf, y_pred_kf)
+    rmse = sqrt(mse)
+    svm_mse_scores.append(mse)
+    svm_rmse_scores.append(rmse)
+    svm_r2_scores.append(r2)
+
+# Calculate the average MSE and RMSE for SVM
+avg_svm_mse = np.mean(svm_mse_scores)
+avg_svm_rmse = np.mean(svm_rmse_scores)
+avg_svm_r2 = np.mean(svm_r2_scores)
+
+# Print the results for SVM
+print(f"Average SVM MSE: {avg_svm_mse}")
+print(f"Average SVM RMSE: {avg_svm_rmse}")
+print(f"Average SVM R2: {avg_svm_r2}")
+print(svm_reg.get_metadata_routing())
