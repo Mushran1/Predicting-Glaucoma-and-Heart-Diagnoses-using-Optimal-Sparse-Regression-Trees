@@ -18,8 +18,6 @@ Selected features include patient demographics, visit details, and diagnostic ou
 ## Modeling Plan
 The OSRT algorithm serves as the primary model, complemented by benchmark models like IAI, Evetree, GUIDE, and CART. Evaluation metrics include F-score, number of leaves, depth, and accuracy. Model performance will be assessed comprehensively to identify strengths and weaknesses.
 
-## Potential Hurdles
-Challenges may arise in data preprocessing and model interpretation. Addressing missing values and ensuring data quality is crucial. Communicating results effectively to stakeholders requires clear and understandable explanations.
 
 ## References
 Centers for Disease Control and Prevention. (2023). Medicaid Claims (MAX) - Vision and Eye Health Surveillance.
