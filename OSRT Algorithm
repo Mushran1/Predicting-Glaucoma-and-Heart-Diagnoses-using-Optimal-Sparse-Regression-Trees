@@ -1,0 +1,83 @@
+# Optimal Sparse Regression Tree Algorithm 
+
+Install osrt
+
+import os
+os.environ["SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL"] = "True"
+!pip install osrt
+
+OSRT Model Training
+import pandas as pd
+import numpy as np
+import time
+import pathlib
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Assuming compute_thresholds and OSRT are available in the current directory or a correct path.
+from osrt.model.threshold_guess import compute_thresholds
+from osrt.model.osrt import OSRT
+
+# read the dataset
+# preprocess your data otherwise OSRT will binarize continuous feature using all threshold values.
+df = pd.read_csv("airquality.csv")
+X, y = df.iloc[:, :-1].values, df.iloc[:, -1].values
+h = df.columns[:-1]
+X = pd.DataFrame(X, columns=h)
+
+# guess thresholds (OPTIONAL) uncomment following lines if you want to speed up optimization
+# NOTE: You should also evaluate accuracy on guessed data if you choose to guess thresholds
+# GBRT parameters for threshold guesses
+n_est = 40
+max_depth = 1
+X_opt, thresholds, header, threshold_guess_time = compute_thresholds(X, y, n_est, max_depth)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_opt, y, test_size=0.2, random_state=42
+)
+
+#X_train = X
+#y_train = pd.DataFrame(y)
+print("X_train:", X_train.shape)
+print("y_train:", y_train.shape)
+
+# train OSRT model
+config = {
+    "similar_support": False,
+    "feature_exchange": False,
+    "continuous_feature_exchange": False,
+    "regularization": 0.007,
+    "depth_budget": 6,
+    "model_limit": 1,
+    "time_limit": 0,
+    "metric": "L2",
+    "weights": [],
+    "verbose": False,
+    "diagnostics": True,
+}
+
+model = OSRT(config)
+
+model.fit(X_train, y_train)
+
+print("evaluate the model, extracting tree and scores", flush=True)
+
+# get the results of trained model
+train_score = model.score(X_train, y_train)
+n_leaves = model.leaves()
+n_nodes = model.nodes()
+time = model.time
+
+print("Model training time: {}".format(time))
+print("Training Score: {}".format(train_score))
+print("# of leaves: {}".format(n_leaves))
+print(model.tree)
+
+# Test model
+y_predict = model.predict(X_test)
+print(y_predict)
+test_mse = mean_squared_error(y_predict, y_test)
+test_r2 = r2_score(y_predict, y_test)
+print("Final MSE: {}".format(test_mse))
+print("Final R2: {}".format(test_r2))
