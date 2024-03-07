@@ -1,0 +1,60 @@
+from xgboost import XGBRegressor
+
+# Assuming 'df' dataframe is already in memory
+
+# Define the features and the target
+X = df.drop("target", axis=1)
+y = df["target"]
+
+# Initialize KFold with 5 splits
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+# Initialize dictionaries to store the results for XGBoost
+results = {"depth": [], "mse": [], "rmse": [], "num_leaves": [], "r2":[]}
+
+# Perform k-fold cross-validation
+for depth in range(2, 6):
+    for train_index, test_index in kf.split(X):
+        # Split the data
+        X_train_kf, X_test_kf = X.iloc[train_index], X.iloc[test_index]
+        y_train_kf, y_test_kf = y.iloc[train_index], y.iloc[test_index]
+
+        # Initialize the XGBoost classifier
+        xgb_clf = XGBRegressor(
+            max_depth=depth,
+            random_state=42,
+            use_label_encoder=False,
+            eval_metric="logloss",
+        )
+        xgb_clf.fit(X_train_kf, y_train_kf)
+
+        # Predict on the test set
+        y_pred_kf = xgb_clf.predict(X_test_kf)
+
+        # Calculate MSE and RMSE
+        mse = mean_squared_error(y_test_kf, y_pred_kf)
+        r2 = r2_score(y_test_kf, y_pred_kf)
+        rmse = np.sqrt(mse)
+
+        # Get the number of leaves
+        num_leaves = xgb_clf.get_booster().trees_to_dataframe()["Tree"].nunique()
+
+        # Store the results
+        results["depth"].append(depth)
+        results["mse"].append(mse)
+        results["rmse"].append(rmse)
+        results["num_leaves"].append(num_leaves)
+        results["r2"].append(r2)
+
+# Convert results to DataFrame
+results_df = pd.DataFrame(results)
+
+# Calculate the average MSE, RMSE, and number of leaves for each depth
+avg_results = results_df.groupby("depth").mean()
+
+# Print the results for each depth
+for depth, row in avg_results.iterrows():
+    print(f"Average XGBoost MSE for depth {depth}: {row['mse']}")
+    print(f"Average XGBoost RMSE for depth {depth}: {row['rmse']}")
+    print(f"Average number of leaves for depth {depth}: {row['num_leaves']}")
+    print(f"Average XGBoost R2 for depth {depth}: {row['r2']}")
