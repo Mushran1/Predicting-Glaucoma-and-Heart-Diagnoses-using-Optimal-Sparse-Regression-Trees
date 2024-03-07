@@ -16,7 +16,7 @@ The dataset comprises Medicaid claims related to eye health conditions, providin
 Selected features include patient demographics, visit details, and diagnostic outcomes. Encoding categorical variables enables model analysis. EDA techniques such as correlation matrix visualization and dot plots will reveal underlying patterns. K-fold cross-validation ensures robust model evaluation.
 
 ## Modeling Plan
-The OSRT algorithm serves as the primary model, complemented by benchmark models like IAI, Evetree, GUIDE, and CART. Evaluation metrics include F-score, number of leaves, depth, and accuracy. Model performance will be assessed comprehensively to identify strengths and weaknesses.
+The OSRT algorithm serves as the primary model, complemented by benchmark models like XGBoost, Random Forest Regressor, SVM,  and CART. Evaluation metrics include mean square error, number of leaves, depth, and R square. Model performance will be assessed comprehensively to identify strengths and weaknesses.
 
 
 ## References
