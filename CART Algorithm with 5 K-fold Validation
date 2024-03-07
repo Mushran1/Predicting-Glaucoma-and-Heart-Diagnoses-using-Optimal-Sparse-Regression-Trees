@@ -1,0 +1,60 @@
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import KFold
+from math import sqrt
+
+# read the dataset
+df = pd.read_csv("heart_binarized.csv")
+X, y = df.iloc[:, :-1].values, df.iloc[:, -1].values
+h = df.columns[:-1]
+X = pd.DataFrame(X, columns=h)
+
+# K Fold validation
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+results = []
+
+for depth in range(2, 6):
+    depth_mse = []
+    depth_rmse = []
+    depth_leaves = []
+    depth_r2 = []
+    for train_index, test_index in kf.split(X):
+        X_train_kf, X_test_kf = X.iloc[train_index], X.iloc[test_index]
+        y_train_kf, y_test_kf = y[train_index], y[test_index]
+
+        cart_model = DecisionTreeRegressor(max_depth=depth)
+        cart_model.fit(X_train_kf, y_train_kf)
+
+        y_test_pred_kf = cart_model.predict(X_test_kf)
+        mse = mean_squared_error(y_test_kf, y_test_pred_kf)
+        rmse = sqrt(mse)
+        leaves = cart_model.get_n_leaves()
+        r2 = r2_score(y_test_kf, y_test_pred_kf)
+        depth_mse.append(mse)
+        depth_rmse.append(rmse)
+        depth_leaves.append(leaves)
+        depth_r2.append(r2)
+
+    avg_mse = np.mean(depth_mse)
+    avg_rmse = np.mean(depth_rmse)
+    avg_leaves = np.mean(depth_leaves)
+    avg_r2 = np.mean(depth_r2)
+    results.append(
+        {
+            "depth": depth,
+            "avg_mse": avg_mse,
+            "avg_rmse": avg_rmse,
+            "avg_leaves": avg_leaves,
+            "avg_r2": avg_r2
+        }
+    )
+
+# Display the results
+for result in results:
+    print(f"Depth: {result['depth']}")
+    print(f"Average MSE: {result['avg_mse']}")
+    print(f"Average RMSE: {result['avg_rmse']}")
+    print(f"Average Number of Leaves: {result['avg_leaves']}")
+    print(f"Average R2: {result['avg_r2']}")
