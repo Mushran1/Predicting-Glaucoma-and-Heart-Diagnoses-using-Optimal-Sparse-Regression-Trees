@@ -1,12 +1,10 @@
-# Optimal Sparse Regression Tree Algorithm 
-
-Install osrt
+# Install osrt
 
 import os
 os.environ["SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL"] = "True"
 !pip install osrt
 
-OSRT Model Training
+# First attempt at fitting model
 import pandas as pd
 import numpy as np
 import time
