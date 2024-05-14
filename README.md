@@ -1,4 +1,4 @@
-# Predicting Glaucoma and Heart Diagnoses using Optimal Sparse Regression Trees
+# Interpretable AI: Using Provably Optimal Sparse Tree Algorithms in Healthcare
 
 ## Introduction
 In recent years, the widespread adoption of machine learning algorithms has brought significant advancements across various industries. However, in fields like healthcare and forensics, where decisions directly impact human lives, the opacity of these "black box" models raises concerns about interpretability and accountability. To address this, researchers have developed interpretable models like the Optimal Sparse Regression Tree (OSRT), offering transparency and explainability without compromising accuracy.
